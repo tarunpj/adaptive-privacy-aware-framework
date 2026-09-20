@@ -1,0 +1,17 @@
+{
+  "experiment_id": "baseline_fedavg",
+  "description": "Standard FedAvg, no privacy, no secure aggregation. Phase 1 baseline.",
+  "dataset": "cifar10",
+  "model": "simple_cnn",
+  "num_clients": 10,
+  "num_rounds": 50,
+  "local_epochs": 3,
+  "learning_rate": 0.05,
+  "batch_size": 32,
+  "fraction_evaluate": 1.0,
+  "differential_privacy": false,
+  "dp_params": null,
+  "secure_aggregation": false,
+  "adaptive_privacy": false,
+  "seed": 42
+}

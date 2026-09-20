@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "adaptive-fl-framework"
+version = "0.1.0"
+description = "Adaptive Privacy-Aware Federated Learning Framework"
+license = {file = "LICENSE"}
+dependencies = [
+    "flwr[simulation]>=1.28.0",
+    "flwr-datasets[vision]>=0.6.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+# ── Flower app registration ──────────────────────────────────────────────────
+[tool.flwr.app]
+publisher = "adaptive-fl"
+fab-format-version = 1
+flwr-version-target = "1.31.0"
+
+[tool.flwr.app.components]
+serverapp = "federated.server:app"
+clientapp = "federated.client:app"
+
+# ── Default run configuration ────────────────────────────────────────────────
+# These values are read by both server.py and client.py via context.run_config.
+# Override any value at runtime:  flwr run . --run-config "num-server-rounds=10"
+[tool.flwr.app.config]
+num-server-rounds   = 50
+num-clients         = 10
+fraction-evaluate   = 1.0
+local-epochs        = 3
+learning-rate       = 0.05
+batch-size          = 32
+experiment-id       = "baseline_fedavg"
+save-model          = false
+
+# ── Differential Privacy (Phase 2) ──────────────────────────────────────────
+# Set dp-enabled = true to activate Opacus DP training on all clients.
+# noise-multiplier: higher = more noise = stronger privacy = lower accuracy
+# max-grad-norm:    per-sample gradient clipping bound
+# target-delta:     delta in (epsilon, delta)-DP; typically 1e-5
+dp-enabled          = false
+dp-noise-multiplier = 0.5
+dp-max-grad-norm    = 1.2
+dp-target-delta     = 1e-5
+
+# ── Secure Aggregation (Phase 3) ────────────────────────────────────────────
+secagg-enabled                  = false
+secagg-num-shares               = 7
+secagg-reconstruction-threshold = 4

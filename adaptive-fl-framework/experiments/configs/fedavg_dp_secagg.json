@@ -1,0 +1,25 @@
+{
+  "experiment_id": "fedavg_dp_secagg",
+  "description": "FedAvg + Fixed Differential Privacy (Opacus) + Secure Aggregation (SecAgg+). Phase 3.",
+  "dataset": "cifar10",
+  "model": "simple_cnn",
+  "num_clients": 10,
+  "num_rounds": 5,
+  "local_epochs": 1,
+  "learning_rate": 0.01,
+  "batch_size": 32,
+  "fraction_evaluate": 1.0,
+  "differential_privacy": true,
+  "dp_params": {
+    "noise_multiplier": 1.0,
+    "max_grad_norm": 1.0,
+    "target_delta": 1e-5
+  },
+  "secure_aggregation": true,
+  "secagg_params": {
+    "num_shares": 7,
+    "reconstruction_threshold": 4
+  },
+  "adaptive_privacy": false,
+  "seed": 42
+}

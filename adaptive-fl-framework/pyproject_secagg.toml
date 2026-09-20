@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "adaptive-fl-framework"
+version = "0.1.0"
+description = "Adaptive Privacy-Aware Federated Learning Framework"
+license = {file = "LICENSE"}
+dependencies = [
+    "flwr[simulation]>=1.28.0",
+    "flwr-datasets[vision]>=0.6.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+# ── Flower app registration ──────────────────────────────────────────────────
+[tool.flwr.app]
+publisher = "adaptive-fl"
+fab-format-version = 1
+flwr-version-target = "1.31.0"
+
+[tool.flwr.app.components]
+serverapp = "federated.server_secagg:app"
+clientapp = "federated.client_secagg:app"
+
+# ── Default run configuration ────────────────────────────────────────────────
+[tool.flwr.app.config]
+num-server-rounds              = 3
+local-epochs                   = 1
+learning-rate                  = 0.01
+batch-size                     = 32
+experiment-id                  = "fedavg_dp_sa"
+
+# ── Differential Privacy ─────────────────────────────────────────────────────
+dp-noise-multiplier            = 1.0
+dp-max-grad-norm               = 1.0
+dp-target-delta                = 1e-5
+
+# ── Secure Aggregation (SecAgg+) ─────────────────────────────────────────────
+# num-shares: how many secret shares each update is split into
+# secagg-threshold: minimum shares needed to reconstruct the aggregate
+# secagg-num-sampled-clients: must match --federation-config num-supernodes
+secagg-num-shares              = 3
+secagg-threshold               = 2
+secagg-num-sampled-clients     = 10

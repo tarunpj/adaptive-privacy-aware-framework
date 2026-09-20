@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "adaptive-fl-framework"
+version = "0.1.0"
+description = "Adaptive Privacy-Aware Federated Learning Framework"
+license = {file = "LICENSE"}
+dependencies = [
+    "flwr[simulation]>=1.28.0",
+    "flwr-datasets[vision]>=0.6.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "opacus>=1.4.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "adaptive-fl"
+fab-format-version = 1
+flwr-version-target = "1.31.0"
+
+[tool.flwr.app.components]
+serverapp = "federated.server_adaptive:app"
+clientapp = "federated.client:app"
+
+# ── FL config ────────────────────────────────────────────────────────────────
+[tool.flwr.app.config]
+num-server-rounds   = 5
+fraction-evaluate   = 1.0
+local-epochs        = 1
+learning-rate       = 0.01
+batch-size          = 32
+experiment-id       = "adaptive_dp"
+
+# ── DP initial values (controller will adapt these each round) ───────────────
+dp-enabled          = true
+dp-noise-multiplier = 1.0
+dp-max-grad-norm    = 1.0
+dp-target-delta     = 1e-5
+
+# ── Adaptive Controller parameters ───────────────────────────────────────────
+# alpha:             noise increase rate per round (15%)
+# beta:              noise decrease rate per round (8%)
+# threshold-high:    convergence rate above which we increase noise
+# threshold-low:     convergence rate below which we decrease noise
+# noise-min/max:     hard bounds on noise multiplier
+# epsilon-budget:    total allowed epsilon before forcing max noise
+# warmup-rounds:     rounds before adaptation starts
+ctrl-alpha            = 0.15
+ctrl-beta             = 0.08
+ctrl-threshold-high   = 0.05
+ctrl-threshold-low    = 0.01
+ctrl-noise-min        = 0.3
+ctrl-noise-max        = 3.0
+ctrl-epsilon-budget   = 10.0
+ctrl-warmup-rounds    = 2

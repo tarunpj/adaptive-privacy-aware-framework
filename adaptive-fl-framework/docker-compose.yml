@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  adaptive-fl-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: adaptive_fl_dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./results:/app/results
+      - ./experiments/configs:/app/experiments/configs
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    restart: unless-stopped
