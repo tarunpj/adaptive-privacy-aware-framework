@@ -104,7 +104,7 @@ The framework provides 4 canonical baselines to systematically evaluate privacy-
 | Baseline Configuration | Threat Model Protected | Differential Privacy (DP) | Secure Aggregation (SecAgg+) | Noise Multiplier ($\sigma$) | Clipping Norm ($C$) | Privacy Guarantee |
 | :--- | :--- | :---: | :---: | :---: | :---: | :--- |
 | **1. Standard FedAvg** | Baseline (No Adversary) | ❌ None | ❌ None | $0.00$ | None | No privacy; vulnerable to MIA & inversion |
-| **2. FedAvg + Fixed DP** | Semi-Honest Data Analyst | ✅ Opacus DP-SGD | ❌ None | Static (e.g., $1.00$) | Static ($1.00$) | Theoretical $(\epsilon, \ delta)$-DP; utility penalty |
+| **2. FedAvg + Fixed DP** | Semi-Honest Data Analyst | ✅ Opacus DP-SGD | ❌ None | Static (e.g., $1.00$) | Static ($1.00$) | Theoretical $(\epsilon, \delta)$-DP; utility penalty |
 | **3. FedAvg + Fixed DP + SecAgg+** | Semi-Honest Server + Analyst | ✅ Opacus DP-SGD | ✅ SecAgg+ | Static (e.g., $1.00$) | Static ($1.00$) | Cryptographic input privacy + $(\epsilon, \delta)$-DP |
 | **4. Proposed Adaptive DP** | Dynamic Privacy-Utility Defense | ✅ Opacus DP-SGD | ✅ Optional | **Dynamic ($\sigma_t \in [0.3, 3.0]$)** | **Dynamic ($C_t \in [0.5, 5.0]$)** | **Optimal pareto frontier of utility & privacy** |
 
@@ -207,46 +207,53 @@ Theoretical $(\epsilon, \delta)$-DP bounds can sometimes be loose or difficult t
 ## 📁 Repository Structure
 
 ```
-adaptive-fl-framework/
-├── dashboard/                        # Interactive Streamlit Web Application
-│   └── app.py                        # Multi-screen web dashboard with Plotly
-├── data_utils/ & datasets/           # Data partitioning and loader pipelines
-│   └── dataset_manager.py            # CIFAR-10, MNIST, Fashion-MNIST (IID & Dirichlet Non-IID)
-├── docs/                         # Scientific documentation & research notes
-│   └── research_notes.md             # Literature gap, math models, and citations
-├── evaluation/                       # Evaluation & auditing engines
-│   ├── metrics.py                    # Top-1/Top-5 Acc, Macro-F1, Precision, Loss, Comm Cost
-│   ├── attack_evaluation.py          # Empirical Membership Inference Attack (MIA) auditor
-│   └── compare_baselines.py          # 4-way multi-baseline aggregator & report generator
-├── experiments/                      # Experiment runner & configs
-│   ├── configs/                      # Declarative JSON experiment presets
-│   │   ├── baseline_fedavg.json
-│   │   ├── fedavg_dp.json
-│   │   ├── fedavg_dp_sa.json
-│   │   └── adaptive_dp.json
-│   └── runner.py                     # Automated experiment execution & plot generator
-├── federated/                        # Flower FL simulation logic
-│   ├── client.py                     # Standard & DP Flower ClientApp
-│   ├── client_secagg.py              # SecAgg+ enabled ClientApp
-│   ├── server.py                     # Flower ServerApp
-│   ├── server_adaptive.py            # Adaptive controller integrated ServerApp
-│   ├── server_secagg.py              # SecAgg+ workflow integrated ServerApp
-│   └── task.py                       # PyTorch training, test loops, & batch evaluation
-├── models/                           # Deep Learning Model Zoo
-│   └── model_factory.py              # CIFAR10CNN, MNISTCNN, SmallResNet architectures
-├── privacy/                          # Privacy engineering modules
-│   ├── differential_privacy.py       # Opacus DP-SGD engine, clipping & noise injection
-│   ├── privacy_accountant.py         # Multi-round RDP / moments privacy accountant
-│   └── adaptive_controller.py        # Closed-loop convergence-aware adaptive controller
-├── results/                          # Generated benchmark CSVs, JSON summaries, and plots
-├── security/                         # Cryptographic modules
-│   └── secure_aggregation.py         # SecAgg+ protocol threat model & masking logic
-├── tests/                            # Comprehensive unit test suites (Phases 1-9)
-├── Dockerfile                        # Containerization build specification
-├── docker-compose.yml                # Docker orchestration configuration
-├── pyproject.toml                    # Flower app configuration & build metadata
-├── requirements.txt                  # Production dependencies
-└── run.py                            # Unified command-line interface (CLI) launcher
+Adaptive-FL-Framework/
+├── adaptive-fl-framework/            # Core Python framework source code
+│   ├── dashboard/                    # Interactive Streamlit Web Application
+│   │   └── app.py                    # Multi-screen web dashboard with Plotly
+│   ├── data_utils/ & datasets/       # Data partitioning and loader pipelines
+│   │   └── dataset_manager.py        # CIFAR-10, MNIST, Fashion-MNIST (IID & Dirichlet Non-IID)
+│   ├── docs/                         # Scientific documentation & research notes
+│   │   └── research_notes.md         # Literature gap, math models, and citations
+│   ├── evaluation/                   # Evaluation & auditing engines
+│   │   ├── metrics.py                # Top-1/Top-5 Acc, Macro-F1, Precision, Loss, Comm Cost
+│   │   ├── attack_evaluation.py      # Empirical Membership Inference Attack (MIA) auditor
+│   │   └── compare_baselines.py      # 4-way multi-baseline aggregator & report generator
+│   ├── experiments/                  # Experiment runner & configs
+│   │   ├── configs/                  # Declarative JSON experiment presets
+│   │   │   ├── baseline_fedavg.json
+│   │   │   ├── fedavg_dp.json
+│   │   │   ├── fedavg_dp_sa.json
+│   │   │   └── adaptive_dp.json
+│   │   └── runner.py                 # Automated experiment execution & plot generator
+│   ├── federated/                    # Flower FL simulation logic
+│   │   ├── client.py                 # Standard & DP Flower ClientApp
+│   │   ├── client_secagg.py          # SecAgg+ enabled ClientApp
+│   │   ├── server.py                 # Flower ServerApp
+│   │   ├── server_adaptive.py        # Adaptive controller integrated ServerApp
+│   │   ├── server_secagg.py          # SecAgg+ workflow integrated ServerApp
+│   │   └── task.py                   # PyTorch training, test loops, & batch evaluation
+│   ├── models/                       # Deep Learning Model Zoo
+│   │   └── model_factory.py          # CIFAR10CNN, MNISTCNN, SmallResNet architectures
+│   ├── privacy/                      # Privacy engineering modules
+│   │   ├── differential_privacy.py   # Opacus DP-SGD engine, clipping & noise injection
+│   │   ├── privacy_accountant.py     # Multi-round RDP / moments privacy accountant
+│   │   └── adaptive_controller.py    # Closed-loop convergence-aware adaptive controller
+│   ├── results/                      # Generated benchmark CSVs, JSON summaries, and plots
+│   ├── security/                     # Cryptographic modules
+│   │   └── secure_aggregation.py     # SecAgg+ protocol threat model & masking logic
+│   ├── tests/                        # Comprehensive unit test suites (Phases 1-9)
+│   ├── Dockerfile                    # Containerization build specification
+│   ├── docker-compose.yml            # Docker orchestration configuration
+│   ├── pyproject.toml                # Flower app configuration & build metadata
+│   ├── requirements.txt              # Production dependencies
+│   └── run.py                        # Unified command-line interface (CLI) launcher
+│
+├── run_dashboard.bat                 # Windows one-click dashboard launcher
+├── run_experiment.bat                # Windows one-click experiment runner
+├── run_tests.bat                     # Windows one-click test suite runner
+├── run_tests.py                      # Root test suite orchestrator
+└── README.md                         # Project documentation
 ```
 
 ---
@@ -261,7 +268,7 @@ adaptive-fl-framework/
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/tarunpj/adaptive-privacy-aware-framework.git
-cd adaptive-privacy-aware-framework/adaptive-fl-framework
+cd adaptive-privacy-aware-framework
 ```
 
 ### 2. Create and Activate a Virtual Environment
@@ -280,6 +287,7 @@ python -m venv .venv
 
 ### 3. Install Dependencies
 ```bash
+cd adaptive-fl-framework
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
@@ -288,7 +296,7 @@ pip install -r requirements.txt
 
 ## 💻 Running Federated Experiments
 
-All experiments can be executed via the unified CLI launcher [`run.py`](file:///d:/Adaptive-FL-Framework/adaptive-fl-framework/run.py):
+All experiments can be executed via the unified CLI launcher [`adaptive-fl-framework/run.py`](file:///d:/Adaptive-FL-Framework/adaptive-fl-framework/run.py) or through the Windows batch runners:
 
 ### Mode 1: Standard FedAvg Baseline (No Privacy)
 ```bash
@@ -341,8 +349,10 @@ An interactive browser-based dashboard is provided for live monitoring, comparis
 ### Launching the Dashboard
 
 ```bash
+# From within adaptive-fl-framework/
 streamlit run dashboard/app.py
 ```
+*(Or on Windows, simply double-click `run_dashboard.bat` from the root folder!)*
 
 Navigate to **`http://localhost:8501`** in your browser.
 
@@ -361,12 +371,15 @@ The framework includes complete containerization for reproducible zero-setup dep
 
 ### Using Docker Compose (Recommended)
 ```bash
+cd adaptive-fl-framework
 docker compose up --build
 ```
 The Streamlit dashboard will automatically start and be accessible at `http://localhost:8501`.
 
 ### Using Standalone Docker
 ```bash
+cd adaptive-fl-framework
+
 # Build image
 docker build -t adaptive-fl-framework .
 
@@ -381,9 +394,10 @@ docker run -p 8501:8501 adaptive-fl-framework
 The framework incorporates an automated multi-phase unit testing suite ensuring robustness across all modules:
 
 ```bash
-# Run the complete test suite:
+# Run the complete test suite from repository root:
 python run_tests.py
 ```
+*(Or double-click `run_tests.bat` on Windows)*
 
 ### Verified Test Phases:
 - ✅ **Phase 1**: Baseline Architecture & Local Training Loops (`tests/test_phase1_baseline.py`)
