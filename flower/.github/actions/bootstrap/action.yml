@@ -1,0 +1,51 @@
+name: "bootstrap"
+description: "Bootstrap Python environment (install and configure Python version and build tools)"
+inputs:
+  python-version:
+    description: "Version range or exact version of Python to use, using SemVer's version range syntax."
+    default: 3.11.14
+  pip-version:
+    description: "Version of pip to be installed using pip"
+    default: 26.0.1
+  setuptools-version:
+    description: "Version of setuptools to be installed using pip"
+    default: 82.0.0
+  uv-version:
+    description: "Version of uv to install"
+    default: "0.10.7"
+outputs:
+  python-version:
+    description: "Version range or exact version of Python"
+    value: ${{ steps.versions.outputs.python-version }}
+  pip-version:
+    description: "Installed version of pip"
+    value: ${{ steps.versions.outputs.pip-version }}
+  setuptools-version:
+    description: "Installed version of setuptools"
+    value: ${{ steps.versions.outputs.setuptools-version }}
+  uv-version:
+    description: "Requested version of uv"
+    value: ${{ steps.versions.outputs.uv-version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        version: ${{ inputs.uv-version }}
+    - name: Install build tools
+      run: |
+        python -m pip install -U pip==${{ inputs.pip-version }}
+        python -m pip install -U setuptools==${{ inputs.setuptools-version }}
+      shell: bash
+    - id: versions
+      shell: bash
+      run: |
+        echo "python-version=$(echo ${{ inputs.python-version }})" >> $GITHUB_OUTPUT
+        echo "pip-version=$(echo ${{ inputs.pip-version }})" >> $GITHUB_OUTPUT
+        echo "setuptools-version=$(echo ${{ inputs.setuptools-version }})" >> $GITHUB_OUTPUT
+        echo "uv-version=$(echo ${{ inputs.uv-version }})" >> $GITHUB_OUTPUT
