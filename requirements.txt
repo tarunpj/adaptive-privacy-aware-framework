@@ -1,0 +1,8 @@
+# Lightweight Cloud Dashboard Deployment Requirements
+# Optimized for fast build, low memory footprint, and reliable cloud hosting (Streamlit Cloud, Render, etc.)
+streamlit>=1.35.0
+plotly>=5.18.0
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+psutil>=5.9.0

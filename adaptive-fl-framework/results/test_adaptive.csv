@@ -1,0 +1,2 @@
+experiment_id,round,train_loss,val_loss,val_acc,test_loss_centralised,test_acc_centralised,epsilon_mean,noise_multiplier,max_grad_norm,target_delta,controller_action,convergence_rate,budget_pressure,dp_enabled,secure_agg_enabled,adaptive_privacy
+test_adaptive,1,2.134661,2.094261,0.21,2.077605,0.2175,0.211298,1.0,1.0,1e-05,WARMUP,0.0,0.02113,True,False,True

@@ -1,0 +1,17 @@
+{
+  "experiment_id": "test_dp",
+  "num_rounds": 1,
+  "participating_clients": 10,
+  "total_time_s": 64.16,
+  "model_size_bytes": 248024,
+  "model_size_kb": 242.21,
+  "final_test_acc": 0.212,
+  "final_test_loss": 2.094054,
+  "final_epsilon": 0.211298,
+  "dp_enabled": true,
+  "noise_multiplier": 1.0,
+  "max_grad_norm": 1.0,
+  "target_delta": 1e-05,
+  "secure_agg": false,
+  "adaptive_privacy": false
+}

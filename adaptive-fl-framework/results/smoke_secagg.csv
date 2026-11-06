@@ -1,0 +1,2 @@
+experiment_id,round,train_loss,val_loss,val_acc,test_loss_centralised,test_acc_centralised,epsilon_mean,noise_multiplier,max_grad_norm,target_delta,dp_enabled,secure_agg_enabled,adaptive_privacy,num_shares,reconstruction_threshold
+smoke_secagg,1,2.035904,1.840799,0.3268,8.444416,0.0955,0.0,1.0,1.0,1e-05,True,True,False,3,2

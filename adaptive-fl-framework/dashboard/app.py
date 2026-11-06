@@ -26,8 +26,16 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # Setup paths
-PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+CURRENT_FILE = Path(__file__).resolve()
+if CURRENT_FILE.parent.name == "dashboard":
+    PROJECT_ROOT = CURRENT_FILE.parent.parent
+elif (CURRENT_FILE.parent / "adaptive-fl-framework").exists():
+    PROJECT_ROOT = CURRENT_FILE.parent / "adaptive-fl-framework"
+else:
+    PROJECT_ROOT = CURRENT_FILE.parent
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 RESULTS_DIR = PROJECT_ROOT / "results"
 CONFIGS_DIR = PROJECT_ROOT / "experiments" / "configs"
@@ -74,10 +82,47 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+def check_simulation_environment() -> Tuple[bool, str, Optional[float]]:
+    """
+    Check if the current runtime environment has the necessary resources
+    and packages to execute a new federated simulation.
+    Returns: (can_run: bool, reason: str, ram_gb: Optional[float])
+    """
+    ram_gb = None
+    try:
+        import psutil
+        ram_gb = round(psutil.virtual_memory().total / (1024 ** 3), 2)
+    except Exception:
+        pass
+
+    # Check for core simulation libraries
+    try:
+        import flwr
+        import torch
+    except ImportError as e:
+        pkg_name = getattr(e, "name", str(e))
+        return False, f"Missing ML runtime dependency: `{pkg_name}`. Full training requires the full PyTorch + Flower environment.", ram_gb
+
+    # In cloud containers (Render, Streamlit Cloud, etc.), verify memory threshold
+    is_cloud = (
+        os.environ.get("STREAMLIT_SERVER_PORT") is not None
+        or os.environ.get("PORT") is not None
+        or os.environ.get("RENDER") is not None
+    )
+    if is_cloud and ram_gb is not None and ram_gb < 1.8:
+        return False, f"Cloud instance RAM ({ram_gb} GB) is below the 2.0 GB recommended for multi-client PyTorch simulations.", ram_gb
+
+    return True, "Full federated learning simulation environment available.", ram_gb
+
+
 def load_available_experiments() -> List[str]:
-    """List all completed experiment CSV names."""
+    """List all completed experiment CSV names, prioritized by canonical baselines."""
     csvs = list(RESULTS_DIR.glob("*.csv"))
-    return [c.stem for c in csvs]
+    runs = [c.stem for c in csvs if not c.stem.startswith("multi_baseline_comparison")]
+    priority = ["adaptive_dp", "fedavg_dp_sa", "fedavg_dp", "baseline_fedavg"]
+    ordered = [p for p in priority if p in runs]
+    others = sorted([r for r in runs if r not in priority])
+    return ordered + others
 
 
 def load_experiment_data(exp_id: str) -> Tuple[Optional[pd.DataFrame], Optional[Dict]]:
@@ -88,7 +133,7 @@ def load_experiment_data(exp_id: str) -> Tuple[Optional[pd.DataFrame], Optional[
     df = pd.read_csv(csv_path) if csv_path.exists() else None
     summary = None
     if json_path.exists():
-        with open(json_path, "r") as f:
+        with open(json_path, "r", encoding="utf-8") as f:
             summary = json.load(f)
     return df, summary
 
@@ -161,64 +206,92 @@ if app_mode == "🚀 Launch & Live Monitor":
                 ctrl_beta = st.slider("Beta (Noise Decrease Rate)", 0.01, 0.30, 0.08, step=0.01)
                 ctrl_warmup = st.slider("Warmup Rounds", 1, 5, 2)
 
+        can_simulate, sim_reason, total_ram = check_simulation_environment()
+        if not can_simulate:
+            st.markdown(
+                """
+                <div style="background-color: #1e293b; border-left: 4px solid #3b82f6; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px;">
+                    <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Cloud Instance Mode</span><br/>
+                    <span style="font-size: 0.9rem; color: #f8fafc;">☁️ Results Explorer & Interactive Posture Active</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
         start_btn = st.button("▶️ Start Experiment", type="primary", use_container_width=True)
 
     with col2:
         st.subheader("📈 Live Metrics & Convergence")
         
         if start_btn:
-            st.info(f"Initiating simulation run `{exp_id}` with `{priv_mode}`...")
-            
-            # Construct execution arguments
-            cmd = [
-                sys.executable, str(PROJECT_ROOT / "run.py"),
-                "--experiment-id", exp_id,
-                "--rounds", str(num_rounds),
-                "--clients", str(num_clients),
-                "--lr", str(lr),
-                "--local-epochs", str(local_epochs),
-                "--batch-size", str(batch_size),
-            ]
-
-            if "Adaptive" in priv_mode:
-                cmd.extend(["--adaptive", "--alpha", str(ctrl_alpha), "--beta", str(ctrl_beta), "--warmup", str(ctrl_warmup), "--noise", str(dp_noise), "--clip", str(dp_clip), "--delta", str(dp_delta)])
-            elif "Secure Aggregation" in priv_mode:
-                cmd.extend(["--secagg", "--noise", str(dp_noise), "--clip", str(dp_clip), "--delta", str(dp_delta)])
-            elif "Fixed Differential Privacy" in priv_mode:
-                cmd.extend(["--dp", "--noise", str(dp_noise), "--clip", str(dp_clip), "--delta", str(dp_delta)])
-
-            progress_bar = st.progress(0.0)
-            status_text = st.empty()
-            status_text.text("Launching Flower SuperLink simulation...")
-
-            process = subprocess.Popen(
-                cmd,
-                cwd=str(PROJECT_ROOT),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-            )
-            
-            log_container = st.empty()
-            full_log = []
-            
-            while True:
-                line = process.stdout.readline()
-                if not line and process.poll() is not None:
-                    break
-                if line:
-                    full_log.append(line)
-                    log_container.code("".join(full_log[-12:]))
-                    time.sleep(0.02)
-
-            process.wait()
-            progress_bar.progress(1.0)
-            if process.returncode == 0:
-                st.success(f"Experiment `{exp_id}` completed successfully!")
+            if not can_simulate:
+                st.warning(
+                    f"⚠️ **Simulation Guard: Cloud Resource Constraints**\n\n"
+                    f"{sim_reason}\n\n"
+                    f"Executing multi-client PyTorch + Flower SuperLink simulations on shared, memory-constrained free-tier cloud containers (1 GB quota) can trigger out-of-memory (OOM) termination of the web service.\n\n"
+                    f"**Explore Pre-computed Benchmarks**: You can immediately inspect existing federated runs using the selector below, or navigate to the **4-Way Comparison Screen**, **Adaptive Privacy Controller**, and **Privacy Audit (MIA)**.\n\n"
+                    f"**To run custom training simulations locally**:\n"
+                    f"```bash\n"
+                    f"python run.py --experiment-id {exp_id} --rounds {num_rounds} --clients {num_clients}\n"
+                    f"```"
+                )
             else:
-                st.error("Experiment failed. Check logs above.")
+                st.info(f"Initiating simulation run `{exp_id}` with `{priv_mode}`...")
+                
+                # Construct execution arguments
+                cmd = [
+                    sys.executable, str(PROJECT_ROOT / "run.py"),
+                    "--experiment-id", exp_id,
+                    "--rounds", str(num_rounds),
+                    "--clients", str(num_clients),
+                    "--lr", str(lr),
+                    "--local-epochs", str(local_epochs),
+                    "--batch-size", str(batch_size),
+                ]
+
+                if "Adaptive" in priv_mode:
+                    cmd.extend(["--adaptive", "--alpha", str(ctrl_alpha), "--beta", str(ctrl_beta), "--warmup", str(ctrl_warmup), "--noise", str(dp_noise), "--clip", str(dp_clip), "--delta", str(dp_delta)])
+                elif "Secure Aggregation" in priv_mode:
+                    cmd.extend(["--secagg", "--noise", str(dp_noise), "--clip", str(dp_clip), "--delta", str(dp_delta)])
+                elif "Fixed Differential Privacy" in priv_mode:
+                    cmd.extend(["--dp", "--noise", str(dp_noise), "--clip", str(dp_clip), "--delta", str(dp_delta)])
+
+                progress_bar = st.progress(0.0)
+                status_text = st.empty()
+                status_text.text("Launching Flower SuperLink simulation...")
+
+                try:
+                    process = subprocess.Popen(
+                        cmd,
+                        cwd=str(PROJECT_ROOT),
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                    )
+                    
+                    log_container = st.empty()
+                    full_log = []
+                    
+                    while True:
+                        line = process.stdout.readline()
+                        if not line and process.poll() is not None:
+                            break
+                        if line:
+                            full_log.append(line)
+                            log_container.code("".join(full_log[-12:]))
+                            time.sleep(0.02)
+
+                    process.wait()
+                    progress_bar.progress(1.0)
+                    if process.returncode == 0:
+                        st.success(f"Experiment `{exp_id}` completed successfully!")
+                    else:
+                        st.error(f"Experiment ended with exit code {process.returncode}. See log snippet above.")
+                except Exception as ex:
+                    progress_bar.progress(1.0)
+                    st.error(f"Failed to start simulation subprocess: {ex}")
 
         # Show current/latest data
         available_runs = load_available_experiments()
@@ -372,6 +445,11 @@ elif app_mode == "📊 4-Way Comparison Screen":
             )
             st.plotly_chart(fig_comp_loss, use_container_width=True)
 
+        plot_img = RESULTS_DIR / "multi_baseline_comparison_plot.png"
+        if plot_img.exists():
+            with st.expander("🖼️ View Publication-Quality 4-Way Diagnostic Figure", expanded=False):
+                st.image(str(plot_img), caption="Publication Baseline Matrix Diagnostic Plot", use_container_width=True)
+
     else:
         st.warning("Run experiments first to populate the 4-way comparison matrix.")
 
@@ -481,7 +559,7 @@ elif app_mode == "🔍 Privacy Audit (MIA Evaluation)":
 elif app_mode == "📁 Experiment Archives":
     st.title("📁 Experiment Results Archive")
     
-    files = list(RESULTS_DIR.glob("*.*"))
+    files = sorted(list(RESULTS_DIR.glob("*.*")), key=lambda p: p.name)
     if files:
         file_data = []
         for f in files:
@@ -492,5 +570,44 @@ elif app_mode == "📁 Experiment Archives":
                 "Last Modified": time.ctime(f.stat().st_mtime),
             })
         st.dataframe(pd.DataFrame(file_data), use_container_width=True, hide_index=True)
+
+        st.markdown("---")
+        st.subheader("🔍 File Inspector & Data Exporter")
+        selected_file_name = st.selectbox("Select File to Inspect", [f.name for f in files], index=0)
+        if selected_file_name:
+            target_path = RESULTS_DIR / selected_file_name
+            ext = target_path.suffix.lower()
+
+            col_view, col_dl = st.columns([3, 1])
+            with col_dl:
+                with open(target_path, "rb") as bf:
+                    st.download_button(
+                        label=f"⬇️ Download {selected_file_name}",
+                        data=bf.read(),
+                        file_name=selected_file_name,
+                        mime="application/octet-stream",
+                        use_container_width=True,
+                    )
+
+            with col_view:
+                if ext == ".csv":
+                    try:
+                        preview_df = pd.read_csv(target_path)
+                        st.caption(f"Showing {len(preview_df)} records from `{selected_file_name}`:")
+                        st.dataframe(preview_df, use_container_width=True)
+                    except Exception as err:
+                        st.error(f"Could not parse CSV: {err}")
+                elif ext == ".json":
+                    try:
+                        with open(target_path, "r", encoding="utf-8") as jf:
+                            json_data = json.load(jf)
+                        st.caption(f"JSON Structure of `{selected_file_name}`:")
+                        st.json(json_data)
+                    except Exception as err:
+                        st.error(f"Could not parse JSON: {err}")
+                elif ext in (".png", ".jpg", ".jpeg"):
+                    st.image(str(target_path), caption=selected_file_name, use_container_width=True)
+                else:
+                    st.info(f"Binary / non-previewable file: `{selected_file_name}`")
     else:
         st.info("No saved results found in results directory.")

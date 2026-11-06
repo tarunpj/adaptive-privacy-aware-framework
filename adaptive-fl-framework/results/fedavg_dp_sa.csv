@@ -1,0 +1,3 @@
+experiment_id,round,train_loss,val_loss,val_acc,test_loss_centralised,test_acc_centralised,epsilon_mean,noise_multiplier,max_grad_norm,target_delta,dp_enabled,secure_agg_enabled,adaptive_privacy,num_shares,reconstruction_threshold
+fedavg_dp_sa,1,2.204123,1.988658,0.2716,31.318548,0.0751,0.0,1.0,1.0,1e-05,True,True,False,3,2
+fedavg_dp_sa,2,2.676001,2.27908,0.1203,91.251889,0.1266,0.0,1.0,1.0,1e-05,True,True,False,3,2

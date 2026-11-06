@@ -1,0 +1,15 @@
+{
+  "experiment_id": "smoke_secagg",
+  "num_rounds": 1,
+  "total_time_s": 129.61,
+  "final_test_acc": 0.0955,
+  "final_test_loss": 8.444416,
+  "dp_enabled": true,
+  "noise_multiplier": 1.0,
+  "max_grad_norm": 1.0,
+  "target_delta": 1e-05,
+  "secure_agg": true,
+  "num_shares": 3,
+  "reconstruction_threshold": 2,
+  "adaptive_privacy": false
+}

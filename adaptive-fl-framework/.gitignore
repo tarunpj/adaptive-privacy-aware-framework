@@ -15,9 +15,8 @@ env/
 # Flower
 .flwr/
 
-# Results and models (large files — commit selectively)
-results/*.csv
-results/*.json
+# Results and models (large binaries — commit CSV and JSON summaries)
+results/checkpoints/
 *.pt
 *.pth
 

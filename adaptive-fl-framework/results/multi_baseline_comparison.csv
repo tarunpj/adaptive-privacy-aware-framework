@@ -1,0 +1,5 @@
+Method,Final Accuracy (%),Final Loss,Privacy Budget (ε),Differential Privacy,Secure Aggregation,Adaptive Noise,Sim Time (s)
+Standard FedAvg,35.61,1.7868,None (0.0),❌ None,❌ None,❌ Fixed,63.4
+FedAvg + Fixed DP,26.78,2.0582,0.624,✅ Opacus,❌ None,❌ Fixed,92.5
+FedAvg + Fixed DP + SecAgg+,12.66,91.2519,0.0,✅ Opacus,✅ SecAgg+,❌ Fixed,141.5
+Proposed Adaptive DP,22.86,2.1061,1.872,✅ Opacus,❌ None,🧠 Active,385.2

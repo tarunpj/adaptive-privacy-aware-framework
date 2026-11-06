@@ -26,11 +26,13 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy project files
 COPY . .
 
-# Expose Streamlit dashboard port
+# Expose default Streamlit dashboard port
+ENV PORT=8501
 EXPOSE 8501
 
 # Health check
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl --fail http://localhost:${PORT:-8501}/_stcore/health || exit 1
 
-# Default entrypoint: launch Streamlit Dashboard
-CMD ["streamlit", "run", "dashboard/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Cloud-compatible startup command supporting dynamic $PORT
+CMD ["sh", "-c", "streamlit run dashboard/app.py --server.port=${PORT:-8501} --server.address=0.0.0.0"]

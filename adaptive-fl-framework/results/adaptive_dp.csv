@@ -1,0 +1,4 @@
+experiment_id,round,train_loss,val_loss,val_acc,test_loss_centralised,test_acc_centralised,epsilon_mean,noise_multiplier,max_grad_norm,target_delta,controller_action,convergence_rate,budget_pressure,dp_enabled,secure_agg_enabled,adaptive_privacy
+adaptive_dp,1,2.298222,2.291888,0.1515,2.291533,0.1546,0.623986,1.0,1.0,1e-05,WARMUP,0.0,0.062399,True,False,True
+adaptive_dp,2,2.247314,2.196938,0.2152,2.193159,0.2109,0.623986,1.0,1.0,1e-05,WARMUP,0.364166,0.124797,True,False,True
+adaptive_dp,3,2.154218,2.114222,0.2306,2.106103,0.2286,0.623986,1.0,1.0,1e-05,INCREASE_PRIVACY,0.083926,0.187196,True,False,True

@@ -1,0 +1,18 @@
+{
+  "experiment_id": "test_baseline",
+  "num_rounds": 3,
+  "participating_clients": 10,
+  "total_time_s": 673.6,
+  "model_size_bytes": 2483240,
+  "model_size_kb": 2425.04,
+  "final_test_acc": 0.1,
+  "best_test_acc": 0.1,
+  "final_test_loss": 2.302782,
+  "final_epsilon": 0.0,
+  "dp_enabled": false,
+  "noise_multiplier": 0.0,
+  "max_grad_norm": 0.0,
+  "target_delta": 0.0,
+  "secure_agg": false,
+  "adaptive_privacy": false
+}

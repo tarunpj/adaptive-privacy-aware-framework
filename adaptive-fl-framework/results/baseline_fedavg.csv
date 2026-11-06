@@ -1,0 +1,4 @@
+experiment_id,round,participating_clients,train_loss,val_loss,val_acc,test_loss_centralised,test_acc_centralised,model_size_bytes,round_time_s,total_time_s,epsilon_mean,epsilon_max,noise_multiplier,max_grad_norm,target_delta,dp_enabled,secure_agg_enabled,adaptive_privacy
+baseline_fedavg,1,10,2.294359,2.252325,0.143,2.250871,0.1426,248024,7.026,111.07,0.0,0.0,0.0,0.0,0.0,False,False,False
+baseline_fedavg,2,10,2.127064,1.979768,0.2688,1.974266,0.2713,248024,4.523,111.07,0.0,0.0,0.0,0.0,0.0,False,False,False
+baseline_fedavg,3,10,1.945651,1.809133,0.3376,1.799633,0.3452,248024,7.526,111.07,0.0,0.0,0.0,0.0,0.0,False,False,False

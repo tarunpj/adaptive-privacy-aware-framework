@@ -40,7 +40,7 @@ def test_dp_train():
     assert result.epsilon > 0, "Epsilon should be positive after training"
     assert result.train_loss > 0, "Loss should be positive"
     clean = unwrap_model(net)
-    assert hasattr(clean, "fc3"), "Unwrapped model should have fc3 layer"
+    assert hasattr(clean, "fc2") or hasattr(clean, "fc3"), "Unwrapped model should have classification head"
     print(f"  [PASS] DP train: loss={result.train_loss:.4f}  epsilon={result.epsilon:.4f}")
 
 

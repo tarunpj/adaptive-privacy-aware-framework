@@ -1,0 +1,1 @@
+experiment_id,round,participating_clients,train_loss,val_loss,val_acc,test_loss_centralised,test_acc_centralised,model_size_bytes,round_time_s,total_time_s,epsilon_mean,epsilon_max,noise_multiplier,max_grad_norm,target_delta,dp_enabled,secure_agg_enabled,adaptive_privacy,controller_action

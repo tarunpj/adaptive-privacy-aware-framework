@@ -1,0 +1,15 @@
+{
+  "experiment_id": "fedavg_dp_sa",
+  "num_rounds": 2,
+  "total_time_s": 141.49,
+  "final_test_acc": 0.1266,
+  "final_test_loss": 91.251889,
+  "dp_enabled": true,
+  "noise_multiplier": 1.0,
+  "max_grad_norm": 1.0,
+  "target_delta": 1e-05,
+  "secure_agg": true,
+  "num_shares": 3,
+  "reconstruction_threshold": 2,
+  "adaptive_privacy": false
+}

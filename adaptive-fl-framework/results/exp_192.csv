@@ -1,0 +1,4 @@
+experiment_id,round,participating_clients,train_loss,val_loss,val_acc,test_loss_centralised,test_acc_centralised,model_size_bytes,round_time_s,total_time_s,epsilon_mean,epsilon_max,noise_multiplier,max_grad_norm,target_delta,dp_enabled,secure_agg_enabled,adaptive_privacy
+exp_192,1,10,2.296371,2.260439,0.1377,2.26025,0.134,248024,16.474,211.81,0.0,0.0,0.0,0.0,0.0,False,False,False
+exp_192,2,10,2.158703,2.0102,0.2563,2.007055,0.2689,248024,13.206,211.81,0.0,0.0,0.0,0.0,0.0,False,False,False
+exp_192,3,10,1.954406,1.817742,0.3423,1.806739,0.3464,248024,7.925,211.81,0.0,0.0,0.0,0.0,0.0,False,False,False
